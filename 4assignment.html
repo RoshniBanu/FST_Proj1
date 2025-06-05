@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Reminder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #06d899; 
+            --secondary-color: #88cde6;
+            --background-color: #fff4e6; 
+            --text-color: #333;
+            --white: #ffffff;
+            --accent-color: #3ac47d;
+            --danger-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--background-color), var(--secondary-color));
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input, textarea {
+            background: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            color: var(--white);
+            background: var(--accent-color);
+            transition: background 0.3s ease-in-out, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .assignment-list {
+            margin-top: 20px;
+        }
+
+        .assignment-item {
+            background: var(--secondary-color);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .assignment-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .delete-btn {
+            background-color: var(--danger-color);
+            color: var(--white);
+            border: none;
+            padding: 5px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            align-self: flex-end;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Assignment Reminder</h2>
+        <h1>Add New Assignment</h1>
+        <input type="text" id="assignment" placeholder="Enter Assignment Title">
+        <textarea id="description" placeholder="Enter Assignment Description"></textarea>
+        <input type="date" id="dueDate">
+        <button onclick="addAssignment()">Add Assignment</button>
+        <div class="assignment-list" id="assignment-list"></div>
+    </div>
+    
+    <script>
+        let assignments = JSON.parse(localStorage.getItem("assignments")) || [];
+
+        function saveAssignments() {
+            localStorage.setItem("assignments", JSON.stringify(assignments));
+        }
+
+        function addAssignment() {
+            let assignmentInput = document.getElementById("assignment");
+            let descriptionInput = document.getElementById("description");
+            let dueDateInput = document.getElementById("dueDate");
+            let assignmentText = assignmentInput.value.trim();
+            let descriptionText = descriptionInput.value.trim();
+            let dueDate = dueDateInput.value;
+            
+            if (assignmentText === "" || dueDate === "" || descriptionText === "") {
+                alert("Please enter assignment title, description, and due date.");
+                return;
+            }
+            
+            let newAssignment = { text: assignmentText, description: descriptionText, dueDate: dueDate };
+            assignments.push(newAssignment);
+            saveAssignments();
+            renderAssignments();
+            
+            assignmentInput.value = "";
+            descriptionInput.value = "";
+            dueDateInput.value = "";
+        }
+
+        function renderAssignments() {
+            let assignmentList = document.getElementById("assignment-list");
+            assignmentList.innerHTML = "";
+            assignments.forEach((assignment, index) => {
+                let div = document.createElement("div");
+                div.className = "assignment-item";
+                div.innerHTML = `<strong>${assignment.text}</strong> <br>
+                                 <em>${assignment.description}</em> <br>
+                                 <span>Due: ${assignment.dueDate}</span>
+                                 <button class='delete-btn' onclick='deleteAssignment(${index})'>X</button>`;
+                assignmentList.appendChild(div);
+            });
+        }
+
+        function deleteAssignment(index) {
+            assignments.splice(index, 1);
+            saveAssignments();
+            renderAssignments();
+        }
+
+        window.onload = renderAssignments;
+    </script>
+</body>
+</html>

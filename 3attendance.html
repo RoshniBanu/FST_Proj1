@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Nunito:wght@400;700&display=swap" rel="stylesheet"> <!-- Google Fonts -->
+    <style>
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #b5c6d8, #a0c2e9); 
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            background: rgba(206, 215, 245, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px); 
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #6c5ce7; 
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        input, button {
+            margin: 10px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            width: 200px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0px 0px 10px rgba(108, 92, 231, 0.3);
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #6c5ce7, #9089ee); 
+            color: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button.present {
+            background: linear-gradient(135deg, #00b894, #55efc4);
+        }
+
+        button.absent {
+            background: linear-gradient(135deg, #ff7675, #ff9a9e); 
+        }
+
+        .attendance-section {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .attendance-list {
+            width: 45%;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .attendance-list:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .attendance-list h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            color: #f80763;
+            margin-bottom: 15px;
+        }
+
+        .attendance-details {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        .attendance-column {
+            width: 48%;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .percentage {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #6c5ce7;
+            font-size: 1.2rem;
+        }
+
+        .delete-btn, .delete-subject {
+            background: linear-gradient(135deg, #ff7675, #ff9a9e); 
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover, .delete-subject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .delete-subject {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .attendance-list {
+                width: 100%; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Attendance Tracker</h1>
+        <input type="text" id="subject" placeholder="Enter Subject Name">
+        <input type="date" id="date">
+        <button class="present" onclick="markAttendance('Present')">Mark Present</button>
+        <button class="absent" onclick="markAttendance('Absent')">Mark Absent</button>
+        
+        <div class="attendance-section" id="attendance-section"></div>
+    </div>
+
+    <script>
+        let subjects = JSON.parse(localStorage.getItem("subjects")) || {};
+
+        window.onload = function() {
+            for (let subject in subjects) {
+                createSubjectFrame(subject);
+                renderEntries(subject);
+                updateProgressBar(subject);
+            }
+        };
+
+        function saveData() {
+            localStorage.setItem("subjects", JSON.stringify(subjects));
+        }
+
+        function markAttendance(status) {
+            let subjectInput = document.getElementById("subject");
+            let dateInput = document.getElementById("date");
+            let subject = subjectInput.value.trim();
+            let date = dateInput.value;
+            
+            if (subject === "" || date === "") {
+                alert("Please enter subject and date.");
+                return;
+            }
+            
+            if (!subjects[subject]) {
+                subjects[subject] = { present: 0, absent: 0, entries: [] };
+                createSubjectFrame(subject);
+            }
+            
+            subjects[subject][status.toLowerCase()]++;
+            subjects[subject].entries.push({ date, status });
+            saveData();
+            renderEntries(subject);
+            updateProgressBar(subject);
+            
+            // Clear input fields
+            subjectInput.value = "";
+            dateInput.value = "";
+        }
+
+        function createSubjectFrame(subject) {
+            let section = document.getElementById("attendance-section");
+            let subjectContainer = document.createElement("div");
+            subjectContainer.className = "attendance-list";
+            subjectContainer.id = `subject-${subject}`;
+            subjectContainer.innerHTML = `<h3>${subject}</h3>
+                <button class='delete-subject' onclick='deleteSubject("${subject}")'>X</button>
+                <div class='progress-container'>
+                    <div class='progress-bar' id='progress-bar-${subject}'></div>
+                </div>
+                <div class='percentage' id='percentage-${subject}'>Attendance: 0%</div>
+                <div class='attendance-details'>
+                    <div class='attendance-column' id='${subject}-present-list'><h4>Present</h4></div>
+                    <div class='attendance-column' id='${subject}-absent-list'><h4>Absent</h4></div>
+                </div>`;
+            section.appendChild(subjectContainer);
+        }
+
+        function renderEntries(subject) {
+            let presentList = document.getElementById(`${subject}-present-list`);
+            let absentList = document.getElementById(`${subject}-absent-list`);
+            presentList.innerHTML = "<h4>Present</h4>";
+            absentList.innerHTML = "<h4>Absent</h4>";
+            subjects[subject].entries.forEach((entry, index) => {
+                let entryDiv = document.createElement("div");
+                entryDiv.innerHTML = `${entry.date} - <strong>${entry.status}</strong> <button class='delete-btn' onclick='deleteEntry("${subject}", ${index})'>X</button>`;
+                entryDiv.style.color = entry.status === 'Present' ? "#00b894" : "#ff7675";
+                (entry.status === 'Present' ? presentList : absentList).appendChild(entryDiv);
+            });
+            updateProgressBar(subject);
+        }
+
+        function deleteEntry(subject, index) {
+            subjects[subject].entries.splice(index, 1);
+            if (subjects[subject].entries.length === 0) {
+                deleteSubject(subject);
+            } else {
+                saveData();
+                renderEntries(subject);
+            }
+        }
+
+        function deleteSubject(subject) {
+            delete subjects[subject];
+            saveData();
+            document.getElementById(`subject-${subject}`).remove();
+        }
+
+        function updateProgressBar(subject) {
+            let presentCount = subjects[subject].present;
+            let absentCount = subjects[subject].absent;
+            let totalCount = presentCount + absentCount;
+            let percentage = totalCount > 0 ? (presentCount / totalCount) * 100 : 0;
+            let progressBar = document.getElementById(`progress-bar-${subject}`);
+            let percentageDisplay = document.getElementById(`percentage-${subject}`);
+            progressBar.style.width = percentage + "%";
+            percentageDisplay.innerText = `Attendance: ${percentage.toFixed(2)}%`;
+        }
+    </script>
+</body>
+</html>
